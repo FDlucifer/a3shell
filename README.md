@@ -11,3 +11,13 @@ more infomation at [my blog](https://arttnba3.cn/2021/02/21/NOTE-0X02-LINUX-KERN
 ## appearance
 
 ![image.png](https://i.loli.net/2021/03/04/iJPF9CqwBpzmlaZ.png)
+
+## version
+
+### 1.0
+
+the basic version
+
+### 1.1
+
+import the Readline Library to provide the automatic code completion function and some other optimization
