@@ -154,8 +154,13 @@ int innerCommand(void)
             if(args[1][0] == '~' && args[1][1] == '/')
             {
                 char * dir = malloc(strlen(args[1]) + strlen(user_info->pw_dir));
+                if(!dir)
+                {
+                    printf("\033[31m\033[1m[x] Malloc error. Terminate.\033[0m\n");
+                    return 1;
+                }
                 strcpy(dir, user_info->pw_dir);
-                strncat(dir, args[1][1], strlen(args[1]) - 1);
+                strncat(dir, args[1] + 1, strlen(args[1]) - 1);
                 chdir(dir);
                 free(dir);
                 dir = NULL;
