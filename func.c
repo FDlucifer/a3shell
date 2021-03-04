@@ -137,7 +137,7 @@ void analyseCommand(void)
     }
     if(!strcmp(args[0], "exit"))
     {
-        puts("Exit the a3shell now, see you again!")
+        puts("Exit the a3shell now, see you again!");
         exit(-1);
     }
 }
