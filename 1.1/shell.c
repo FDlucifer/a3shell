@@ -29,7 +29,10 @@ int main(void)
 
         int flag = analyseCommand();
         if(flag == FLAG_NULL_INPUT)
+        {
+            puts("");
             continue;
+        }
 
         if(innerCommand())
             continue;

@@ -113,7 +113,10 @@ int analyseCommand(void)
             break;
     }
     if(args[args_count - 1][strlen(args[args_count - 1]) - 1] == '&')
+    {
+        args[args_count - 1][strlen(args[args_count - 1]) - 1] = '\0';
         return FLAG_EXECVE_BACKGROUND;
+    }
     return FLAG_EXECVE_WAIT;
 }
 

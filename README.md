@@ -10,7 +10,7 @@ more infomation at [my blog](https://arttnba3.cn/2021/02/21/NOTE-0X02-LINUX-KERN
 
 ## appearance
 
-![image.png](https://i.loli.net/2021/03/05/SOQhFtAaZJI9DrT.png)
+![image.png](https://i.loli.net/2021/03/05/a2PZdr8ULscwjky.png)
 
 ## version
 
