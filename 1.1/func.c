@@ -121,13 +121,13 @@ int innerCommand(void)
 {
     if(!strcmp(args[0], "exit"))
     {
-        puts("Exit the a3shell now, see you again!");
+        puts("\033[33m\033[1m[*] Exit the a3shell now, see you again!\033[0m");
         exit(-1);
     }
     else if(!strcmp(args[0], "cd"))
     {
         if(args_count > 2)
-            puts("cd: too many arguments");
+            puts("\033[31m\033[1m[x] cd: too many arguments\033[0m");
         else
         {
             if(args[1][0] == '~')
@@ -171,7 +171,9 @@ void createChild(int flag)
         printf("\033[31m\033[1m[x] Unable to fork the child, inner error.\033[0m\n");
     else if(pid == 0) // the child thread
     {
-        execvp(args[0], args);
+        int n = execvp(args[0], args);
+        if (n == -1)
+            printf("\033[31m\033[1m[x] a3sh: unable to execute the programme: %s. something\'s wrong.\033[0m\n", args[0]);
         exit(0);
     }
     else // the parent thread
