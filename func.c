@@ -121,6 +121,7 @@ void readCommand(void)
         command_buf[count++] = ch;
     }
     command_buf[count] = '\0';
+    historyRecord();
 }
 
 void analyseCommand(void)
@@ -135,9 +136,84 @@ void analyseCommand(void)
         if(args_count + 1 == ARGS_MAX)
             break;
     }
+}
+
+int innerCommand(void)
+{
     if(!strcmp(args[0], "exit"))
     {
         puts("Exit the a3shell now, see you again!");
         exit(-1);
+    }
+    else if(!strcmp(args[0], "cd"))
+    {
+        if(args_count > 1)
+            puts("cd: too many arguments");
+        else
+        {
+            if(args[1][0] == '~' && args[1][1] == '/')
+            {
+                char * dir = malloc(strlen(args[1]) + strlen(user_info->pw_dir));
+                strcpy(dir, user_info->pw_dir);
+                strncat(dir, args[1][1], strlen(args[1]) - 1);
+                chdir(dir);
+                free(dir);
+                dir = NULL;
+            }
+            else
+                chdir(args[1]);
+        }
+        return 1;
+    }
+    else if(!strcmp(args[0], "history"))
+    {
+        if(args[1] && !strcmp(args[1], "-c"))
+        {
+            his_count = 0;
+            his_full = 0;
+            his_start = 0;
+            return 1;
+        }
+        int count = 0;
+        if(his_full)
+        {
+            for(int i = his_start; i < HIS_MAX; i++)
+            {
+                printf(" %d  ", count++);
+                puts(history[i]);
+            }
+            for(int i = 0; i < his_start;i++)
+            {
+                printf(" %d  ", count++);
+                puts(history[i]);
+            }
+        }
+        else
+        {
+            for(int i = 0; i < his_count; i++)
+            {
+                printf(" %d  ", count++);
+                puts(history[i]);
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+void historyRecord(void)
+{
+    history[his_count] = malloc(strlen(command_buf));
+    strcpy(history[his_count], command_buf);
+    his_count++;
+    if(his_full)
+    {
+        his_start++;
+        his_start %= HIS_MAX;
+    }
+    if(his_count == HIS_MAX)
+    {
+        his_count = 0;
+        his_full = 1;
     }
 }

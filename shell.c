@@ -14,9 +14,12 @@ int main(void)
 
     while(1)
     {
+        memset(args, 0, sizeof(char*) * 0x100);
         typePrompt();
         readCommand();
         analyseCommand();
+        if(innerCommand())
+            continue;
 
         int pid = fork();
 
@@ -27,7 +30,6 @@ int main(void)
         else if(pid == 0) // the child thread
         {
             execvp(args[0], args);
-            memset(args, 0, sizeof(char*) * args_count);
             break;
         }
         else // the parent thread

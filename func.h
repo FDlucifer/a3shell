@@ -9,6 +9,7 @@
 
 #define BUF_MAX 0x10000
 #define ARGS_MAX 0x100
+#define HIS_MAX 0x100
 
 uid_t uid;
 int user_path_len;
@@ -17,13 +18,20 @@ char user_path[0x100];
 char current_path[0x200];
 struct passwd * user_info = NULL;
 
-char * command_buf = NULL;
-int command_buf_size = 0;
+static char * command_buf = NULL;
+static int command_buf_size = 0;
 
-char * args[0x100];
-int args_count = 0;
+static char * args[ARGS_MAX];
+static int args_count = 0;
+
+static char * history[HIS_MAX];
+static int his_count = 0;
+static int his_start = 0;
+static int his_full = 0;
 
 void init(void);
 void typePrompt(void);
 void readCommand(void);
 void analyseCommand(void);
+int innerCommand(void);
+void historyRecord(void);
