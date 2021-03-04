@@ -92,7 +92,7 @@ void typePrompt(void)
     }
 }
 
-void readCommand(void)
+int readCommand(void)
 {
     unsigned long long count = 0;
     char ch;
@@ -121,7 +121,15 @@ void readCommand(void)
         command_buf[count++] = ch;
     }
     command_buf[count] = '\0';
+    if(count == 0)
+        return FLAG_NULL_INPUT;
     historyRecord();
+    if(command_buf[count - 1] == '&')
+    {
+        command_buf[count - 1] = '\0';
+        return FLAG_EXECVE_BACKGROUND;
+    }
+    return FLAG_EXECVE_WAIT;
 }
 
 void analyseCommand(void)
@@ -221,4 +229,17 @@ void historyRecord(void)
         his_count = 0;
         his_full = 1;
     }
+}
+
+void createChild(int flag)
+{
+    int pid = fork();
+
+    if(pid < 0) // failed to fork a new thread
+        printf("\033[31m\033[1m[x] Unable to fork the child, inner error.\033[0m\n");
+    else if(pid == 0) // the child thread
+        execvp(args[0], args);
+    else // the parent thread
+        if(flag == FLAG_EXECVE_WAIT)
+            wait(NULL); //waiting for the child to exit
 }

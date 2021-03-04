@@ -11,6 +11,10 @@
 #define ARGS_MAX 0x100
 #define HIS_MAX 0x100
 
+#define FLAG_NULL_INPUT -1
+#define FLAG_EXECVE_BACKGROUND 0
+#define FLAG_EXECVE_WAIT 1
+
 uid_t uid;
 int user_path_len;
 char local_host_name[0x100];
@@ -31,7 +35,8 @@ static int his_full = 0;
 
 void init(void);
 void typePrompt(void);
-void readCommand(void);
+int readCommand(void);
 void analyseCommand(void);
 int innerCommand(void);
 void historyRecord(void);
+void createChild(int flag);
