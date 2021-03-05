@@ -6,21 +6,23 @@ more infomation at [my blog](https://arttnba3.cn/2021/02/21/NOTE-0X02-LINUX-KERN
 
 ## current progress
 
-15%, only a simple appearance, which can execute some simple progress
+18%, only a simple appearance, which can execute some simple progress
 
 ## appearance
 
-![image.png](https://i.loli.net/2021/03/05/a2PZdr8ULscwjky.png)
+The one on the left is ```a3shell```, and the other one on the right is ```bash```
+
+![image.png](https://i.loli.net/2021/03/05/dVrnBjGHvlz9Ioe.png)
 
 ## version
 
 ### 1.0
 
-the basic version
+the basic version, only glibc is neededs
 
 ### 1.1
 
-libreadline need to be installed:
+[The GNU Readline Library](https://tiswww.case.edu/php/chet/readline/rltop.html) need to be installed:
 
 ```shell
 $ sudo apt-get install libreadline-gplv2-dev

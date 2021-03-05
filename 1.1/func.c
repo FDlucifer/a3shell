@@ -103,6 +103,74 @@ int analyseCommand(void)
     args_count = 0;
     if(!(command_buf[0]))
         return FLAG_NULL_INPUT;
+        
+    if (command_buf[0] == '!')
+    {
+        HIST_ENTRY ** his = history_list();
+        int last_his = 0;
+        while(his[last_his + 1])
+            last_his++;
+
+        if (command_buf[1] == '!')
+        {
+            if(his[0] == NULL)
+            {
+                puts("\033[31m\033[1m[x] No available command, history is empty.\033[0m");
+                return FLAG_NULL_INPUT;
+            }
+
+            int flag = FLAG_EXECVE_WAIT, len_cmd = strlen(command_buf), len_his = strlen(his[last_his]->line);
+            char * temp = malloc(len_cmd + len_his);
+
+            if(command_buf[len_cmd - 1] == '&')
+            {
+                command_buf[len_cmd - 1] = '\0';
+                flag = FLAG_EXECVE_BACKGROUND;
+            }
+
+            strcpy(temp, his[last_his]->line);
+            strncat(temp, command_buf + 2, len_cmd + len_his - strlen(temp));
+            strcpy(command_buf, temp);
+            free(temp);
+            printf("%s\n", command_buf);
+            analyseCommand();
+            return flag;
+        }
+        else if (command_buf[1] >= '0' && command_buf[1] <= '9')
+        {
+            int num_end = 1;
+            while(command_buf[num_end] >= '0' && command_buf[num_end] <= '9')
+                num_end++;
+            char ch = command_buf[num_end];
+            command_buf[num_end] = '\0';
+            int his_p = atoi(command_buf + 1);
+            command_buf[num_end] = ch;
+
+            if (his_p < 0 || his_p > last_his || !his[his_p])
+            {
+                puts("\033[31m\033[1m[x] No available command, invalid history index.\033[0m");
+                return FLAG_NULL_INPUT;
+            }
+
+            int flag = FLAG_EXECVE_WAIT, len_cmd = strlen(command_buf), len_his = strlen(his[his_p]->line);
+            char * temp = malloc(len_cmd + len_his);
+
+            if(command_buf[len_cmd - 1] == '&')
+            {
+                command_buf[len_cmd - 1] = '\0';
+                flag = FLAG_EXECVE_BACKGROUND;
+            }
+
+            strcpy(temp, his[his_p]->line);
+            strncat(temp, command_buf + 2, len_cmd + len_his - strlen(temp));
+            strcpy(command_buf, temp);
+            free(temp);
+            printf("%s\n", command_buf);
+            analyseCommand();
+            return flag;
+        }
+    }
+
     add_history(command_buf);
     args[args_count++] = strtok(command_buf, " ");
     char * ptr;
@@ -152,9 +220,17 @@ int innerCommand(void)
         }
         return 1;
     }
-    else if(!strcmp(args[0], "history"))
+    else if (!strcmp(args[0], "history"))
     {
         HIST_ENTRY ** his = history_list();
+        if (args_count > 1)
+        {
+            if(!strcmp(args[1], "-c"))
+            {
+                clear_history();
+                return 1;
+            }
+        }
         for(int i = 0; his[i]; i++)
         {
             printf(" %d\t", i);

@@ -17,7 +17,7 @@ void init(void)
         exit(-1);
     }
     command_buf_size = 0x500;
-
+    memset(history, 0, sizeof(char*) * HIS_MAX);
 }
 
 void typePrompt(void)
@@ -44,7 +44,7 @@ void typePrompt(void)
         printf("@");
         printf(local_host_name);
         printf(":");
-        if(strlen(current_path) > user_path_len)
+        if(strlen(current_path) >= user_path_len)
         {
             memcpy(user_path, current_path, user_path_len);
             user_path[user_path_len] = '\0';
@@ -71,7 +71,7 @@ void typePrompt(void)
         printf("\033[0m\033[1m");
         printf(":");
         printf("\033[34m");
-        if(strlen(current_path) > user_path_len)
+        if(strlen(current_path) >= user_path_len)
         {
             memcpy(user_path, current_path, user_path_len);
             user_path[user_path_len] = '\0';
@@ -123,7 +123,74 @@ int readCommand(void)
     command_buf[count] = '\0';
     if(count == 0)
         return FLAG_NULL_INPUT;
+    
+    if(count > 1)
+    {
+        if (command_buf[0] == '!')
+        {
+            if (command_buf[1] == '!')
+            {
+                if(!his_full && his_count == 0)
+                {
+                    puts("\033[31m\033[1m[x] No available command, history is empty.\033[0m");
+                    return FLAG_NULL_INPUT;
+                }
+
+                char * temp = malloc(command_buf_size);
+                int flag = FLAG_EXECVE_WAIT;
+
+                if(command_buf[count - 1] == '&')
+                {
+                    command_buf[count - 1] = '\0';
+                    flag = FLAG_EXECVE_BACKGROUND;
+                }
+
+                strcpy(temp, history[((his_count + HIS_MAX - 1) % HIS_MAX)]);
+                strncat(temp, command_buf + 2, command_buf_size - strlen(temp));
+                strcpy(command_buf, temp);
+                free(temp);
+                historyRecord();
+                printf("%s\n", command_buf);
+                return flag;
+            }
+            else if (command_buf[1] >= '0' && command_buf[1] <= '9')
+            {
+                int num_end = 1;
+                while(command_buf[num_end] >= '0' && command_buf[num_end] <= '9')
+                    num_end++;
+                char ch = command_buf[num_end];
+                command_buf[num_end] = '\0';
+                int his = atoi(command_buf + 1);
+                command_buf[num_end] = ch;
+
+                if (his < 0 || his >= HIS_MAX || !history[his])
+                {
+                    puts("\033[31m\033[1m[x] No available command, invalid history index.\033[0m");
+                    return FLAG_NULL_INPUT;
+                }
+
+                char * temp = malloc(command_buf_size);
+                int flag = FLAG_EXECVE_WAIT;
+
+                if(command_buf[count - 1] == '&')
+                {
+                    command_buf[count - 1] = '\0';
+                    flag = FLAG_EXECVE_BACKGROUND;
+                }
+
+                strcpy(temp, history[his]);
+                strncat(temp, command_buf + num_end, command_buf_size - strlen(temp));
+                strcpy(command_buf, temp);
+                free(temp);
+                historyRecord();
+                printf("%s\n", command_buf);
+                return flag;
+            }
+        }
+    }
+
     historyRecord();
+    
     if(command_buf[count - 1] == '&')
     {
         command_buf[count - 1] = '\0';
@@ -150,16 +217,16 @@ int innerCommand(void)
 {
     if(!strcmp(args[0], "exit"))
     {
-        puts("Exit the a3shell now, see you again!");
+        puts("\033[33m\033[1m[*] Exit the a3shell now, see you again!\033[0m");
         exit(-1);
     }
     else if(!strcmp(args[0], "cd"))
     {
         if(args_count > 1)
-            puts("cd: too many arguments");
+            puts("\033[31m\033[1m[x] cd: too many arguments\033[0m");
         else
         {
-            if(args[1][0] == '~' && args[1][1] == '/')
+            if(args[1][0] == '~')
             {
                 char * dir = malloc(strlen(args[1]) + strlen(user_info->pw_dir));
                 if(!dir)
@@ -236,9 +303,14 @@ void createChild(int flag)
     int pid = fork();
 
     if(pid < 0) // failed to fork a new thread
-        printf("\033[31m\033[1m[x] Unable to fork the child, inner error.\033[0m\n");
+        puts("\033[31m\033[1m[x] Unable to fork the child, inner error.\033[0m");
     else if(pid == 0) // the child thread
-        execvp(args[0], args);
+    {
+        int n = execvp(args[0], args);
+        if (n == -1)
+            printf("\033[31m\033[1m[x] a3sh: unable to execute the programme: %s. something\'s wrong.\033[0m\n", args[0]);
+        exit(0);
+    }
     else // the parent thread
         if(flag == FLAG_EXECVE_WAIT)
             wait(NULL); //waiting for the child to exit
