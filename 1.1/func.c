@@ -107,18 +107,18 @@ int analyseCommand(void)
     if (command_buf[0] == '!')
     {
         HIST_ENTRY ** his = history_list();
+        if(his == NULL)
+        {
+            printf("\033[31m\033[1m[x] No available command, history is empty.\033[0m");
+            return FLAG_NULL_INPUT;
+        }
+
         int last_his = 0;
         while(his[last_his + 1])
             last_his++;
 
         if (command_buf[1] == '!')
         {
-            if(his[0] == NULL)
-            {
-                puts("\033[31m\033[1m[x] No available command, history is empty.\033[0m");
-                return FLAG_NULL_INPUT;
-            }
-
             int flag = FLAG_EXECVE_WAIT, len_cmd = strlen(command_buf), len_his = strlen(his[last_his]->line);
             char * temp = malloc(len_cmd + len_his);
 
